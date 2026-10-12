@@ -1,0 +1,26 @@
+<annotation>
+	<folder>collectedimages</folder>
+	<filename>thanks.5e42969d-9a47-11f1-a14d-1cce51adcd85.jpg</filename>
+	<path>workspace/images/test/thanks.5e42969d-9a47-11f1-a14d-1cce51adcd85.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>thankyou</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>188</xmin>
+			<ymin>252</ymin>
+			<xmax>538</xmax>
+			<ymax>436</ymax>
+		</bndbox>
+	</object>
+</annotation>

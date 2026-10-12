@@ -1,0 +1,14 @@
+# Core Deep Learning & Computer Vision
+tensorflow>=2.10.0,<2.16.0
+opencv-python>=4.6.0
+numpy>=1.23.0,<2.0.0
+
+# Data Processing & Annotation Handling
+pandas>=1.5.0
+Pillow>=9.0.0
+protobuf>=3.19.6,<4.25.0
+
+# Note on TensorFlow Object Detection API:
+# The scripts import helper modules from 'object_detection'.
+# For detailed installation instructions of the TensorFlow Models
+# Object Detection API, refer to the README.md setup guide.

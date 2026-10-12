@@ -1,0 +1,26 @@
+<annotation>
+	<folder>collectedimages</folder>
+	<filename>iloveyou.97a95e7f-9a47-11f1-86eb-1cce51adcd85.jpg</filename>
+	<path>workspace/images/train/iloveyou.97a95e7f-9a47-11f1-86eb-1cce51adcd85.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>iloveyou</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>171</xmin>
+			<ymin>128</ymin>
+			<xmax>445</xmax>
+			<ymax>307</ymax>
+		</bndbox>
+	</object>
+</annotation>

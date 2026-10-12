@@ -1,0 +1,26 @@
+<annotation>
+	<folder>collectedimages</folder>
+	<filename>no.88913580-9a47-11f1-a135-1cce51adcd85.jpg</filename>
+	<path>workspace/images/train/no.88913580-9a47-11f1-a135-1cce51adcd85.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>no</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>358</xmin>
+			<ymin>184</ymin>
+			<xmax>489</xmax>
+			<ymax>384</ymax>
+		</bndbox>
+	</object>
+</annotation>

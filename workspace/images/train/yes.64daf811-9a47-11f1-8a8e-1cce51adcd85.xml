@@ -1,0 +1,26 @@
+<annotation>
+	<folder>train</folder>
+	<filename>yes.64daf811-9a47-11f1-8a8e-1cce51adcd85.jpg</filename>
+	<path>workspace/images/train/yes.64daf811-9a47-11f1-8a8e-1cce51adcd85.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>yes</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>182</xmin>
+			<ymin>280</ymin>
+			<xmax>311</xmax>
+			<ymax>467</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>collectedimages</folder>
+	<filename>hello.3f7a4c83-9a47-11f1-a1c2-1cce51adcd85.jpg</filename>
+	<path>workspace/images/test/hello.3f7a4c83-9a47-11f1-a1c2-1cce51adcd85.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hello</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>405</xmin>
+			<ymin>144</ymin>
+			<xmax>632</xmax>
+			<ymax>372</ymax>
+		</bndbox>
+	</object>
+</annotation>

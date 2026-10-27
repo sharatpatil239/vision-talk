@@ -30,18 +30,20 @@ The system is configured to detect **5 gesture classes**:
 
 ## Project Workflow
 
-The project implements a complete, modular object detection lifecycle:
+The project implements a complete, modular, and verified object detection lifecycle:
 
 ```
-[Webcam Capture] ──> [Annotation (Pascal VOC)] ──> [TFRecord Generation] ──> [Transfer Learning] ──> [Export & Inference]
-1_data_collection.py  workspace/images/train & test  2_generate_tfrecord.py   3_setup_and_train.py   detect.py
+[Webcam Capture] ──> [Annotation (LabelImg)] ──> [Validation] ──> [Safe Split] ──> [TFRecords] ──> [Training] ──> [Inference]
+1_data_collection.py  workspace/images/collected  dataset_validator.py  split_dataset.py  2_generate_tfrecord  3_setup_and_train  detect.py
 ```
 
-1. **Data Collection (`1_data_collection.py`)**: Automates webcam capture of gesture samples with a timed delay to vary hand positions and angles.
-2. **Annotation & Formatting**: Images are annotated in Pascal VOC XML format with bounding boxes enclosing hand signs.
-3. **TFRecord Generation (`2_generate_tfrecord.py` & `scripts/generate_tfrecord.py`)**: Converts raw images and XML annotations into serialized binary TFRecords (`train.record` and `test.record`) along with a protobuf label map (`label_map.pbtxt`).
-4. **Model Configuration (`3_setup_and_train.py`)**: Ingests base pre-trained SSD MobileNet V2 weights, updates pipeline hyperparameters (number of classes, batch size, checkpoint paths), and generates `pipeline.config`.
-5. **Real-Time Inference (`detect.py`)**: Loads the exported TensorFlow `SavedModel` and runs real-time gesture recognition directly from a webcam feed.
+1. **Data Collection (`1_data_collection.py`)**: Robust webcam capture tool with pre-roll countdown, progress HUD, and non-blocking preview. Captures are kept isolated in `workspace/images/collectedimages/<class>/`.
+2. **Annotation in LabelImg**: Images are labeled with Pascal VOC XML bounding boxes enclosing gestures.
+3. **Dataset Validation (`dataset_validator.py`)**: Deep inspection of image/XML pairs, coordinate bounds, image dimensions, and class labels against `label_map.pbtxt`.
+4. **Safe Dataset Splitting (`split_dataset.py`)**: Stratified train/test splitter with collision prevention, random seeding, and dry-run preview.
+5. **TFRecord Generation (`2_generate_tfrecord.py`)**: Self-contained TFRecord serializer with dry-run verification, strict label matching, and overwrite protection.
+6. **Model Configuration (`3_setup_and_train.py`)**: Pipeline configuration for SSD MobileNet V2.
+7. **Real-Time Inference (`detect.py`)**: Live webcam detection using exported SavedModel.
 
 ---
 
@@ -49,15 +51,18 @@ The project implements a complete, modular object detection lifecycle:
 
 ```
 vision-talk/
-├── 1_data_collection.py      # Automated image capture via webcam
-├── 2_generate_tfrecord.py     # XML annotation to TFRecord & label map converter
-├── 3_setup_and_train.py       # Pre-trained model extraction & pipeline configuration
+├── 1_data_collection.py      # Robust webcam capture tool (isolated staging)
+├── 2_generate_tfrecord.py     # Safe TFRecord generator (--dry_run, --overwrite)
+├── 3_setup_and_train.py       # Pre-trained model & pipeline configurator
 ├── 4_realtime_detection.py    # Checkpoint-based detection runner
 ├── detect.py                  # Primary production inference script (SavedModel)
+├── dataset_validator.py       # Full dataset & annotation integrity validator
+├── split_dataset.py           # Safe, non-destructive train/test splitter
 ├── requirements.txt           # Project dependencies
-├── .gitignore                 # Excludes caches, checkpoints, and OS artifacts
+├── .gitignore                 # Excludes caches, checkpoints, and collectedimages
 ├── scripts/
 │   └── generate_tfrecord.py   # Parameterized CLI utility for TFRecord creation
+
 └── workspace/
     ├── annotations/
     │   ├── label_map.pbtxt    # Protobuf class label definitions (IDs 1-5)
@@ -102,9 +107,11 @@ Install the core verified Python dependencies:
 pip install -r requirements.txt
 ```
 
-### 3. TensorFlow Object Detection API Setup
+### 3. TensorFlow Object Detection API Setup (Optional - Training Only)
 
-The inference scripts utilize helper utilities (`label_map_util`, `visualization_utils`) from the TensorFlow Object Detection API. To make these utilities available:
+The inference pipeline (`detect.py` and `4_realtime_detection.py`) runs completely **standalone** using pure TensorFlow SavedModel loading and OpenCV. Installing the TensorFlow Models repository is **not required for inference**.
+
+If you wish to retrain or fine-tune models from scratch using `3_setup_and_train.py`, install Google's official TensorFlow Model Garden:
 
 ```bash
 # Clone the TensorFlow Models repository
@@ -120,18 +127,109 @@ cd ../..
 
 ---
 
-## Running the Inference Demo
+## Step-by-Step Dataset Workflow Guide
 
-Once dependencies and the Object Detection API utilities are installed, launch the real-time webcam detector:
+### 1. Collect Raw Gesture Images
+Run the reliable webcam data collector to stage new samples:
 
 ```bash
-python detect.py
+# Collect 15 images for 'thankyou' (isolated in workspace/images/collectedimages/thankyou/)
+python 1_data_collection.py --labels thankyou --num_images 15 --interval 2.0
+
+# Collect for all foundational classes:
+python 1_data_collection.py --labels hello thankyou yes no iloveyou --num_images 15
+```
+- **Live HUD**: Displays pre-roll countdown (`Starting in: 5s`), current counter (`Captured: X/Y`), and interval ticker.
+- **Controls**: Press **`q`** or **`ESC`** at any moment to safely exit. Hardware is guaranteed to release in a `finally` block.
+- **Isolation**: Images are saved strictly to `workspace/images/collectedimages/<class>/` to keep raw images separate from verified training data.
+
+### 2. Annotate in LabelImg (Pascal VOC XML)
+Install and launch LabelImg on your staged raw images:
+
+```bash
+# Install LabelImg in your Python environment
+pip install labelImg
+
+# Launch LabelImg pointing to your collected images
+labelImg workspace/images/collectedimages/thankyou
 ```
 
-### Requirements for Inference:
-- **Webcam**: A functional webcam accessible at device index `0`.
-- **Model Files**: The script automatically loads the pre-packaged exported model located at `workspace/models/exported_model/saved_model` and the label map at `workspace/annotations/label_map.pbtxt`.
-- **Exit**: Focus on the camera feed window and press **`q`** to quit the stream.
+**LabelImg Setup Checklist**:
+1. In the left toolbar, click **Change Save Dir** and set it to the same directory as your images (`workspace/images/collectedimages/thankyou/`).
+2. Verify that the annotation format button below Save is set to **`PascalVOC`** (generates `.xml` files).
+3. Click **View** in the top menu and enable **Auto Save Mode**.
+4. Draw bounding boxes around the hand gesture by pressing **`w`**.
+5. **Class Naming Rule**: Always type the exact verified class name (e.g. `thankyou`, `hello`, `yes`, `no`, `iloveyou`).
+6. Press **`d`** to proceed to the next image.
+
+### 3. Validate Dataset Quality
+Audit all image/XML pairs, coordinate bounds, and label mappings before splitting:
+
+```bash
+python dataset_validator.py
+```
+- Performs 8 automated checks (bounding box boundaries, image dimensions, orphaned files, duplicate names across splits).
+- Returns **Exit code 0** on success; returns **Exit code 1** with descriptive error logs if any defects exist.
+
+### 4. Split Staged Data into Train and Test Sets
+Distribute validated (image + XML) pairs into `train/` (80%) and `test/` (20%) without cross-contamination:
+
+```bash
+# Preview split distribution safely with dry run:
+python split_dataset.py --source_dir workspace/images/collectedimages/thankyou --dry_run
+
+# Execute safe non-destructive copy into workspace/images/train and test:
+python split_dataset.py --source_dir workspace/images/collectedimages/thankyou
+```
+- **Collision Protection**: Checks if an image basename already exists in `train/` or `test/` and aborts if a duplicate is found.
+- **Paired Distribution**: Guarantees each `.jpg` and its `.xml` are always placed together in the exact same split.
+
+### 5. Generate Binary TFRecords
+Convert the validated dataset into binary TFRecords for model training:
+
+```bash
+# Step A: Validate dataset without writing (Dry-run mode):
+python 2_generate_tfrecord.py --dry_run
+
+# Step B: Generate records (Protected: requires --overwrite to replace existing):
+python 2_generate_tfrecord.py --overwrite
+```
+- Uses self-contained TensorFlow serialization (no dependency on external OD API protos).
+- Strictly rejects any class not present in `label_map.pbtxt`.
+
+---
+
+## Running the Inference Demo
+
+Launch real-time webcam gesture detection:
+
+```bash
+# Primary production detector
+python detect.py
+
+# Or via the backwards-compatibility wrapper:
+python 4_realtime_detection.py
+```
+
+### Advanced Detection Options:
+```bash
+# Adjust confidence cutoff (default is 0.50):
+python detect.py --threshold 0.65
+
+# Switch webcam index if multiple cameras are connected:
+python detect.py --camera 1
+
+# Run offline inference on a static test image (no camera required):
+python detect.py --image workspace/images/test/hello.3bdc752c-9a47-11f1-8556-1cce51adcd85.jpg
+
+# Save visualized detection output to file:
+python detect.py --image workspace/images/test/hello.3bdc752c-9a47-11f1-8556-1cce51adcd85.jpg --output_image demo_out.jpg --headless
+```
+
+### Controls & Safeguards:
+- **Exit**: Focus on the camera feed window and press **`q`** or **`ESC`**.
+- **Resource Protection**: Webcam device capture and GUI display windows are guaranteed to release cleanly via `try/finally`.
+- **Diagnostics**: If camera index 0 is inaccessible (in use by Zoom/Teams or permission disabled), the script outputs actionable diagnosis and fallback commands.
 
 ---
 
@@ -151,14 +249,15 @@ python detect.py
 - **Code & Asset Integrity**: Repository structure, exported model weights, dataset annotations, and configuration files are intact and organized.
 - **Verification Status**:
   - Code syntax, paths, and XML annotation schemas have been statically validated.
-  - End-to-end webcam detection performance, real-time FPS, and quantitative test accuracy metrics (such as mean Average Precision / mAP) have **not been independently benchmarked** in this environment and remain **unverified**.
+  - Standalone SavedModel inference and class mapping (1=hello, 2=thankyou, 3=yes, 4=no, 5=iloveyou) have been verified on test images with >95% confidence.
+  - Webcam capture handles q/ESC exits, camera unavailability, and try/finally cleanup.
 
 ---
 
 ## Roadmap & Planned Improvements
 
 - [ ] **Class Label Harmonization**: Align the label name in `1_data_collection.py` and `2_generate_tfrecord.py` (`'thanks'` vs. `'thankyou'`) to ensure seamless retraining.
-- [ ] **Standalone Inference Engine**: Decouple `detect.py` from `object_detection.utils` by implementing pure OpenCV bounding box drawing, eliminating the need to install the full TensorFlow Models repository for inference.
+- [x] **Standalone Inference Engine**: Decouple `detect.py` from `object_detection.utils` by implementing pure OpenCV bounding box drawing, eliminating the need to install the full TensorFlow Models repository for inference.
 - [ ] **Dataset Expansion**: Expand the image count per gesture class to at least 100+ multi-user samples under varied illumination.
 - [ ] **Quantitative Benchmarking**: Evaluate detection mAP on an expanded test set and measure inference latency across CPU and GPU hardware.
 

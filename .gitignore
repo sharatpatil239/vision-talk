@@ -63,3 +63,10 @@ workspace/models/*/train/
 # Model backups and checkpoints
 *.backup
 *.tmp
+
+# Raw image staging / collection directory
+workspace/images/collectedimages/
+
+# Downloaded archives
+workspace/pre-trained-models/*.tar
+workspace/pre-trained-models/*.tar.gz

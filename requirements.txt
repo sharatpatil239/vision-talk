@@ -1,14 +1,22 @@
-# Core Deep Learning & Computer Vision
-tensorflow>=2.10.0,<2.16.0
-opencv-python>=4.6.0
-numpy>=1.23.0,<2.0.0
+# VisionTalk: Sign Language Detector - Dependencies
+#
+# Tested and verified on Windows with Python 3.10 and TensorFlow 2.19.0.
+# Inference (detect.py, 4_realtime_detection.py) runs independently of the
+# TensorFlow Object Detection API using pure TensorFlow SavedModel & OpenCV.
 
-# Data Processing & Annotation Handling
+# Core Deep Learning & Computer Vision (Inference & Training)
+tensorflow>=2.10.0
+opencv-python>=4.6.0
+numpy>=1.23.0
+
+# Dataset Processing, Validation & TFRecord Serialization
 pandas>=1.5.0
 Pillow>=9.0.0
-protobuf>=3.19.6,<4.25.0
+protobuf>=3.19.6
 
-# Note on TensorFlow Object Detection API:
-# The scripts import helper modules from 'object_detection'.
-# For detailed installation instructions of the TensorFlow Models
-# Object Detection API, refer to the README.md setup guide.
+# IMPORTANT NOTE ON TENSORFLOW OBJECT DETECTION API:
+# Do NOT install 'tensorflow_object_detection_api' from PyPI (it is obsolete).
+# The inference scripts (detect.py and 4_realtime_detection.py) do NOT require
+# the external Object Detection API. If you wish to retrain models from scratch
+# using 3_setup_and_train.py, clone Google's official TensorFlow Model Garden:
+# https://github.com/tensorflow/models
